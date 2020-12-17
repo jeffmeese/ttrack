@@ -20,6 +20,7 @@ set(HDR_FILES
   project.h
   projectmodel.h
   switch.h
+  workperiod.h
 )
 
 set(SRC_FILES
@@ -29,6 +30,7 @@ set(SRC_FILES
   project.cpp
   projectmodel.cpp
   switch.cpp
+  workperiod.cpp
 )
 
 set(UI_FILES

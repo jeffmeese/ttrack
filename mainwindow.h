@@ -26,8 +26,20 @@ public:
 
 private slots:
   void handleAddCommunity();
+  void handleAddWorkPeriod();
+  void handleExit();
+  void handleNewProject();
+  void handleOpenProject();
+  void handleOptions();
+  void handleSaveProject();
+  void handleSaveProjectAs();
   void handleSliderClick();
   void handleUpdate();
+
+private:
+  void initActions();
+  void initUi();
+  void newProject();
 
 private:
   std::unique_ptr<Ui::MainWindow> mUi;

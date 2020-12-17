@@ -10,6 +10,8 @@
 #include <thread>
 #include <vector>
 
+class WorkPeriod;
+
 class Community
     : public QObject
 {
@@ -24,28 +26,29 @@ public:
   void setName(const QString & name);
 
 public:
+  void addWorkPeriod(std::unique_ptr<WorkPeriod> workPeriod);
+  WorkPeriod * getWorkPeriod(std::size_t index);
+  const WorkPeriod * getWorkPeriod(std::size_t index) const;
   void startWork();
   void stopWork();
+  std::size_t totalWorkPeriods() const;
   int totalTimeWorked() const;
 
 private slots:
-  void updateWorkTime();
+  void updateWorkPeriod();
 
 signals:
-  void workTimeIncrement();
+  void changed();
 
 private:
-  struct WorkTime
-  {
-    std::chrono::system_clock::time_point start;
-    std::chrono::system_clock::time_point stop;
-  };
+  using WorkPeriodPtr = std::unique_ptr<WorkPeriod>;
+  using WorkPeriodVector = std::vector<WorkPeriodPtr>;
 
 private:
   bool mWorking;
   QString mName;
-  WorkTime mCurrentWork;
-  std::vector<WorkTime> mTimeWorked;
+  WorkPeriodPtr mCurrentWorkPeriod;
+  WorkPeriodVector mWorkPeriods;
   QTimer mTimer;
 };
 

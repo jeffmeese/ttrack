@@ -1,5 +1,7 @@
 #include "community.h"
 
+#include "workperiod.h"
+
 #include <chrono>
 #include <ctime>
 
@@ -7,13 +9,22 @@ Community::Community()
   : mWorking(false)
 {
   mTimer.setInterval(1000);
-  mTimer.stop();
-  connect(&mTimer, SIGNAL(timeout()), this, SLOT(updateWorkTime()));
+  connect(&mTimer, SIGNAL(timeout()), this, SLOT(updateWorkPeriod()));
 }
 
-void Community::updateWorkTime()
+void Community::addWorkPeriod(std::unique_ptr<WorkPeriod> workPeriod)
 {
-  emit workTimeIncrement();
+  mWorkPeriods.push_back(std::move(workPeriod));
+}
+
+WorkPeriod * Community::getWorkPeriod(std::size_t index)
+{
+  return mWorkPeriods.at(index).get();
+}
+
+const WorkPeriod * Community::getWorkPeriod(std::size_t index) const
+{
+  return mWorkPeriods.at(index).get();
 }
 
 void Community::startWork()
@@ -21,7 +32,8 @@ void Community::startWork()
   if (mWorking)
     return;
 
-  mCurrentWork.start = std::chrono::system_clock::now();
+  mCurrentWorkPeriod.reset(new WorkPeriod);
+  mCurrentWorkPeriod->setStartTime(std::chrono::system_clock::now());
   mTimer.start();
   mWorking = true;
 }
@@ -32,25 +44,34 @@ void Community::stopWork()
     return;
 
   mTimer.stop();
-  mCurrentWork.stop = std::chrono::system_clock::now();
-  mTimeWorked.push_back(mCurrentWork);
+  mCurrentWorkPeriod->setStopTime(std::chrono::system_clock::now());
+  mWorkPeriods.push_back(std::move(mCurrentWorkPeriod));
   mWorking = false;
 }
 
 int Community::totalTimeWorked() const
 {
   int timeWorked = 0;
-  for (std::size_t i = 0; i < mTimeWorked.size(); i++) {
-    const WorkTime & workTime = mTimeWorked.at(i);
-    auto seconds = std::chrono::duration_cast<std::chrono::seconds>(workTime.stop - workTime.start);
-    timeWorked += seconds.count();
+  for (std::size_t i = 0; i < mWorkPeriods.size(); i++) {
+    const WorkPeriod * workPeriod = mWorkPeriods.at(i).get();
+    timeWorked += workPeriod->duration();
   }
 
   if (mWorking) {
-    auto t = std::chrono::system_clock::now();
-    auto seconds = std::chrono::duration_cast<std::chrono::seconds>(t - mCurrentWork.start);
-    timeWorked += seconds.count();
+    mCurrentWorkPeriod->setStopTime(std::chrono::system_clock::now());
+    timeWorked += mCurrentWorkPeriod->duration();
   }
 
   return timeWorked;
+}
+
+std::size_t Community::totalWorkPeriods() const
+{
+  return mWorkPeriods.size();
+}
+
+void Community::updateWorkPeriod()
+{
+  mCurrentWorkPeriod->setStopTime(std::chrono::system_clock::now());
+  emit changed();
 }

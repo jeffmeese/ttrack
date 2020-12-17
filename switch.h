@@ -12,13 +12,14 @@ class Switch
 
 public:
   Switch(QWidget* parent = nullptr);
-  Switch(const QBrush& brush, QWidget* parent = nullptr);
+  Switch(const QBrush & brush, QWidget* parent = nullptr);
 
   QSize sizeHint() const override;
   QBrush brush() const;
   int offset() const;
   void setBrush(const QBrush &brsh);
   void setOffset(int o);
+  void setOn(bool value);
 
 protected:
   void paintEvent(QPaintEvent*) override;
@@ -27,15 +28,15 @@ protected:
 
 private:
   bool mSwitch;
-  qreal mOpacity;
-  int mX;
-  int mY;
   int mHeight;
   int mMargin;
+  int mX;
+  int mY;
+  qreal mOpacity;
+  QBrush mBrush;
   QBrush mThumb;
   QBrush mTrack;
-  QBrush mBrush;
-  QPropertyAnimation *mAnim = nullptr;
+  QPropertyAnimation * mAnim;
 };
 
 inline QBrush Switch::brush() const

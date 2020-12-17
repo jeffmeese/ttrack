@@ -2,10 +2,10 @@
 
 Switch::Switch(QWidget *parent)
   : QAbstractButton(parent)
-  , mHeight(10)
-  , mOpacity(0.000)
   , mSwitch(false)
+  , mHeight(10)
   , mMargin(10)
+  , mOpacity(0.000)
   , mThumb("#d5d5d5")
   , mAnim(new QPropertyAnimation(this, "offset", this))
 {
@@ -16,11 +16,11 @@ Switch::Switch(QWidget *parent)
 
 Switch::Switch(const QBrush &brush, QWidget *parent)
   : QAbstractButton(parent)
-  , mHeight(10)
   , mSwitch(false)
-  , mOpacity(0.000)
+  , mHeight(10)
   , mMargin(10)
-  ,mThumb("#d5d5d5")
+  , mOpacity(0.000)
+  , mThumb("#d5d5d5")
   , mAnim(new QPropertyAnimation(this, "offset", this))
 {
   setOffset(mHeight / 2);
@@ -54,20 +54,7 @@ void Switch::paintEvent(QPaintEvent *e)
 void Switch::mouseReleaseEvent(QMouseEvent *e)
 {
   if (e->button() & Qt::LeftButton) {
-    mSwitch = mSwitch ? false : true;
-    mThumb = mSwitch ? mBrush : QBrush("#d5d5d5");
-    if (mSwitch) {
-      mAnim->setStartValue(mHeight / 2);
-      mAnim->setEndValue(width() - mHeight);
-      mAnim->setDuration(120);
-      mAnim->start();
-    }
-    else {
-      mAnim->setStartValue(offset());
-      mAnim->setEndValue(mHeight / 2);
-      mAnim->setDuration(120);
-      mAnim->start();
-    }
+    setOn(!mSwitch);
   }
   QAbstractButton::mouseReleaseEvent(e);
 }
@@ -76,6 +63,25 @@ void Switch::enterEvent(QEvent *e)
 {
   setCursor(Qt::PointingHandCursor);
   QAbstractButton::enterEvent(e);
+}
+
+void Switch::setOn(bool value)
+{
+  mSwitch = value;
+  mThumb = mSwitch ? mBrush : QBrush("#d5d5d5");
+  if (mSwitch) {
+    mAnim->setStartValue(mHeight / 2);
+    mAnim->setEndValue(width() - mHeight);
+    mAnim->setDuration(120);
+    mAnim->start();
+  }
+  else {
+    mAnim->setStartValue(offset());
+    mAnim->setEndValue(mHeight / 2);
+    mAnim->setDuration(120);
+    mAnim->start();
+  }
+  update();
 }
 
 QSize Switch::sizeHint() const

@@ -74,6 +74,9 @@
      </layout>
     </item>
     <item>
+     <layout class="QGridLayout" name="gridLayout_2"/>
+    </item>
+    <item>
      <widget class="QTableView" name="cProjectView"/>
     </item>
    </layout>
@@ -91,27 +94,65 @@
     <property name="title">
      <string>Program</string>
     </property>
-    <addaction name="actionAdd_Project"/>
-    <addaction name="actionRemove_Project"/>
+    <addaction name="actionNew_Project"/>
+    <addaction name="actionOpen_Project"/>
+    <addaction name="separator"/>
+    <addaction name="actionSave_Project"/>
+    <addaction name="actionSave_Project_As"/>
+    <addaction name="separator"/>
+    <addaction name="actionOptions"/>
     <addaction name="separator"/>
     <addaction name="actionExit"/>
    </widget>
+   <widget class="QMenu" name="menuProject">
+    <property name="title">
+     <string>Project</string>
+    </property>
+    <addaction name="actionAdd_Community"/>
+    <addaction name="actionAdd_Work_Period"/>
+   </widget>
    <addaction name="menuProgram"/>
+   <addaction name="menuProject"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
-  <action name="actionAdd_Project">
+  <action name="actionAdd_Community">
    <property name="text">
-    <string>Add Project</string>
+    <string>Add Community</string>
    </property>
   </action>
-  <action name="actionRemove_Project">
+  <action name="actionNew_Project">
    <property name="text">
-    <string>Remove Project</string>
+    <string>New Project</string>
+   </property>
+  </action>
+  <action name="actionOpen_Project">
+   <property name="text">
+    <string>Open Project</string>
+   </property>
+  </action>
+  <action name="actionSave_Project">
+   <property name="text">
+    <string>Save Project</string>
+   </property>
+  </action>
+  <action name="actionSave_Project_As">
+   <property name="text">
+    <string>Save Project As</string>
+   </property>
+  </action>
+  <action name="actionOptions">
+   <property name="text">
+    <string>Options</string>
    </property>
   </action>
   <action name="actionExit">
    <property name="text">
     <string>Exit</string>
+   </property>
+  </action>
+  <action name="actionAdd_Work_Period">
+   <property name="text">
+    <string>Add Work Period</string>
    </property>
   </action>
  </widget>

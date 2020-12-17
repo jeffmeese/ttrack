@@ -29,18 +29,37 @@ QVariant ProjectModel::data(const QModelIndex & index, int role) const
         return community->name();
       }
       else if (col == 2) {
-        int timeWorked  = community->totalTimeWorked();
-        return QString::number(timeWorked) + " seconds";
+        return formatTime(community->totalTimeWorked());
       }
     }
   }
   return QVariant();
 }
 
-void ProjectModel::handleCommunityUpdate()
+QString ProjectModel::formatTime(int seconds) const
 {
-  qDebug() << QObject::tr(__FUNCTION__);
+  int hours = 0, minutes = 0;
+  while (seconds >= 3600) {
+    hours++;
+    seconds -= 3600;
+  }
+  while (seconds >= 60) {
+    minutes++;
+    seconds -= 60;
+  }
+  QString s1 = QString("%1:%2:%3").arg(hours, 2, 10, QChar('0'))
+                                  .arg(minutes, 2, 10, QChar('0'))
+                                  .arg(seconds, 2, 10, QChar('0'));
+  return s1;
+}
 
+void ProjectModel::handleAddCommunity(Community *)
+{
+  emit layoutChanged();
+}
+
+void ProjectModel::handleProjectModified()
+{
   emit layoutChanged();
 }
 
@@ -62,23 +81,21 @@ QVariant ProjectModel::headerData(int section, Qt::Orientation orientataion, int
   return QVariant();
 }
 
-QModelIndex ProjectModel::parent(const QModelIndex & index) const
+QModelIndex ProjectModel::parent(const QModelIndex &) const
 {
   return QModelIndex();
 }
 
-int ProjectModel::rowCount(const QModelIndex & parent) const
+int ProjectModel::rowCount(const QModelIndex &) const
 {
-  return (mProject != nullptr) ? mProject->totalCommunities() : 0;
+  return (mProject != nullptr) ? static_cast<int>(mProject->totalCommunities()) : 0;
 }
 
 void ProjectModel::setProject(Project *project)
 {
   mProject = project;
   if (mProject != nullptr) {
-    for (std::size_t i = 0; i < mProject->totalCommunities(); i++) {
-      Community * c = mProject->getCommunity(i);
-      connect(c, SIGNAL(workTimeIncrement()), SLOT(handleCommunityUpdate()));
-    }
+    connect(mProject, SIGNAL(communityAdded(Community *)), SLOT(handleAddCommunity(Community*)));
+    connect(mProject, SIGNAL(modified(bool)), SLOT(handleProjectModified()));
   }
 }

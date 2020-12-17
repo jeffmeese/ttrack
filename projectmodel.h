@@ -3,6 +3,7 @@
 
 #include <QAbstractTableModel>
 
+class Community;
 class Project;
 
 class ProjectModel
@@ -25,8 +26,12 @@ public:
   QModelIndex parent(const QModelIndex & index) const override;
   int rowCount(const QModelIndex & parent = QModelIndex()) const override;
 
-public slots:
-  void handleCommunityUpdate();
+private:
+  QString formatTime(int seconds) const;
+
+private slots:
+  void handleAddCommunity(Community * community);
+  void handleProjectModified();
 
 private:
   Project * mProject;

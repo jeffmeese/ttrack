@@ -14,29 +14,5 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(QT NAMES Qt6 Qt5 COMPONENTS Widgets REQUIRED)
 find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Widgets REQUIRED)
 
-set(HDR_FILES
-  community.h
-  mainwindow.h
-  project.h
-  projectmodel.h
-  switch.h
-  workperiod.h
-)
+add_subdirectory(src)
 
-set(SRC_FILES
-  community.cpp
-  mainwindow.cpp
-  main.cpp
-  project.cpp
-  projectmodel.cpp
-  switch.cpp
-  workperiod.cpp
-)
-
-set(UI_FILES
-  mainwindow.ui
-)
-
-add_executable(ttrack ${HDR_FILES} ${SRC_FILES} ${UI_FILES})
-
-target_link_libraries(ttrack PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)

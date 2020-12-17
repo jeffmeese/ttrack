@@ -7,6 +7,7 @@ set(HDR_FILES
   mainwindow.h
   project.h
   projectmodel.h
+  reportmodel.h
   switch.h
   workperiod.h
 )
@@ -17,6 +18,7 @@ set(SRC_FILES
   main.cpp
   project.cpp
   projectmodel.cpp
+  reportmodel.cpp
   switch.cpp
   workperiod.cpp
 )

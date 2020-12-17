@@ -19,10 +19,13 @@ class Community
 
 public:
   Community();
+  ~Community();
 
 public:
+  bool active() const;
   QString name() const;
   bool working() const;
+  void setActive(bool value);
   void setName(const QString & name);
 
 public:
@@ -31,6 +34,7 @@ public:
   const WorkPeriod * getWorkPeriod(std::size_t index) const;
   void startWork();
   void stopWork();
+  int timeWorkedToday() const;
   std::size_t totalWorkPeriods() const;
   int totalTimeWorked() const;
 
@@ -45,6 +49,7 @@ private:
   using WorkPeriodVector = std::vector<WorkPeriodPtr>;
 
 private:
+  bool mActive;
   bool mWorking;
   QString mName;
   WorkPeriodPtr mCurrentWorkPeriod;

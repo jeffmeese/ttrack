@@ -5,11 +5,24 @@
 #include <chrono>
 #include <ctime>
 
+#include <QDate>
+
 Community::Community()
-  : mWorking(false)
+  : mActive(true)
+  , mWorking(false)
 {
   mTimer.setInterval(1000);
   connect(&mTimer, SIGNAL(timeout()), this, SLOT(updateWorkPeriod()));
+}
+
+Community::~Community()
+{
+
+}
+
+bool Community::active() const
+{
+  return mActive;
 }
 
 void Community::addWorkPeriod(std::unique_ptr<WorkPeriod> workPeriod)
@@ -27,13 +40,18 @@ const WorkPeriod * Community::getWorkPeriod(std::size_t index) const
   return mWorkPeriods.at(index).get();
 }
 
+void Community::setActive(bool value)
+{
+  mActive = value;
+}
+
 void Community::startWork()
 {
   if (mWorking)
     return;
 
   mCurrentWorkPeriod.reset(new WorkPeriod);
-  mCurrentWorkPeriod->setStartTime(std::chrono::system_clock::now());
+  mCurrentWorkPeriod->setStart(QDateTime::currentDateTime());
   mTimer.start();
   mWorking = true;
 }
@@ -44,9 +62,25 @@ void Community::stopWork()
     return;
 
   mTimer.stop();
-  mCurrentWorkPeriod->setStopTime(std::chrono::system_clock::now());
+  mCurrentWorkPeriod->setEnd(QDateTime::currentDateTime());
   mWorkPeriods.push_back(std::move(mCurrentWorkPeriod));
   mWorking = false;
+}
+
+int Community::timeWorkedToday() const
+{
+  QDate date = QDate::currentDate();
+  int timeWorked = 0;
+  for (std::size_t i = 0; i < mWorkPeriods.size(); i++) {
+    const WorkPeriod * workPeriod = mWorkPeriods.at(i).get();
+    QDateTime start = workPeriod->start();
+    QDateTime end = workPeriod->end();
+    if (start.date().year() == date.year() && start.date().month() == date.month() && start.date().day() == date.day()) {
+      timeWorked += workPeriod->duration();
+    }
+    timeWorked += workPeriod->duration();
+  }
+  return timeWorked;
 }
 
 int Community::totalTimeWorked() const
@@ -58,7 +92,7 @@ int Community::totalTimeWorked() const
   }
 
   if (mWorking) {
-    mCurrentWorkPeriod->setStopTime(std::chrono::system_clock::now());
+    mCurrentWorkPeriod->setEnd(QDateTime::currentDateTime());
     timeWorked += mCurrentWorkPeriod->duration();
   }
 
@@ -72,6 +106,7 @@ std::size_t Community::totalWorkPeriods() const
 
 void Community::updateWorkPeriod()
 {
-  mCurrentWorkPeriod->setStopTime(std::chrono::system_clock::now());
+  mCurrentWorkPeriod->setEnd(QDateTime::currentDateTime());
+  //mCurrentWorkPeriod->setStopTime(std::chrono::system_clock::now());
   emit changed();
 }

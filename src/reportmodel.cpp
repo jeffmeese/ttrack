@@ -1,21 +1,20 @@
-#include "projectmodel.h"
+#include "reportmodel.h"
 
 #include "community.h"
 #include "project.h"
 
-#include <QDebug>
-
-ProjectModel::ProjectModel()
+ReportModel::ReportModel()
   : mProject(nullptr)
 {
+
 }
 
-int ProjectModel::columnCount(const QModelIndex &) const
+int ReportModel::columnCount(const QModelIndex &) const
 {
-  return 4;
+  return 2;
 }
 
-QVariant ProjectModel::data(const QModelIndex & index, int role) const
+QVariant ReportModel::data(const QModelIndex & index, int role) const
 {
   if (mProject == nullptr)
     return QVariant();
@@ -25,13 +24,10 @@ QVariant ProjectModel::data(const QModelIndex & index, int role) const
     int col = index.column();
     if (row < (int)mProject->totalCommunities()) {
       const Community * community = mProject->getCommunity(row);
-      if (col == 1) {
+      if (col == 0) {
         return community->name();
       }
-      else if (col == 2) {
-        return formatTime(community->totalTimeWorked());
-      }
-      else if (col == 3) {
+      else if (col == 1) {
         return formatTime(community->totalTimeWorked());
       }
     }
@@ -39,7 +35,7 @@ QVariant ProjectModel::data(const QModelIndex & index, int role) const
   return QVariant();
 }
 
-QString ProjectModel::formatTime(int seconds) const
+QString ReportModel::formatTime(int seconds) const
 {
   int hours = 0, minutes = 0;
   while (seconds >= 3600) {
@@ -56,48 +52,42 @@ QString ProjectModel::formatTime(int seconds) const
   return s1;
 }
 
-void ProjectModel::handleAddCommunity(Community *)
+void ReportModel::handleAddCommunity(Community *)
 {
   emit layoutChanged();
 }
 
-void ProjectModel::handleProjectModified()
+void ReportModel::handleProjectModified()
 {
   emit layoutChanged();
 }
 
-QVariant ProjectModel::headerData(int section, Qt::Orientation orientataion, int role) const
+QVariant ReportModel::headerData(int section, Qt::Orientation orientataion, int role) const
 {
   if (role == Qt::DisplayRole) {
     if (orientataion == Qt::Horizontal) {
       if (section == 0) {
-        return "Status";
-      }
-      else if (section == 1) {
         return "Community";
       }
-      else if (section == 2) {
-        return "Time Worked Today";
-      }
-      else if (section == 3) {
-        return "Total Time Worked";
+      else if (section == 1) {
+        return "Total Time";
       }
     }
   }
   return QVariant();
 }
 
-QModelIndex ProjectModel::parent(const QModelIndex &) const
+QModelIndex ReportModel::parent(const QModelIndex &) const
 {
   return QModelIndex();
 }
 
-int ProjectModel::rowCount(const QModelIndex &) const
+int ReportModel::rowCount(const QModelIndex &) const
 {
   return (mProject != nullptr) ? static_cast<int>(mProject->totalCommunities()) : 0;
 }
 
-void ProjectModel::setProject(Project *project)
+void ReportModel::setProject(Project *project)
 {
   mProject = project;
   if (mProject != nullptr) {

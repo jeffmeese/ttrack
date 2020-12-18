@@ -8,8 +8,9 @@
 #include <memory>
 
 class Community;
+class CommunityModel;
+class CommunityView;
 class Project;
-class ProjectModel;
 class ReportModel;
 class Switch;
 namespace Ui
@@ -37,12 +38,10 @@ private slots:
   void handleOptions();
   void handleSaveProject();
   void handleSaveProjectAs();
-  void handleSliderClick();
   void handleUpdate();
   void updateTimeControls();
 
 private:
-  void addCommunity(Community * community);
   void initActions();
   void initUi();
   void newProject();
@@ -69,9 +68,7 @@ private:
 private:
   std::unique_ptr<Ui::MainWindow> mUi;
   std::unique_ptr<Project> mProject;
-  std::unique_ptr<ProjectModel> mProjectModel;
-  std::unique_ptr<ReportModel> mReportModel;
-  std::map<Switch*, Community*> mSwitchMap;
+  std::unique_ptr<CommunityModel> mCommunityModel;
   QTimer mUpdateTimer;
 };
 #endif // MAINWINDOW_H

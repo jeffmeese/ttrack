@@ -21,6 +21,9 @@ public:
   void setOffset(int o);
   void setOn(bool value);
 
+public:
+  //void paint(QPainter *painter, const QRect &rect, const QPalette &palette) const;
+
 protected:
   void paintEvent(QPaintEvent*) override;
   void mouseReleaseEvent(QMouseEvent*) override;
@@ -59,5 +62,7 @@ inline void Switch::setOffset(int o)
   mX = o;
   update();
 }
+
+//Q_DECLARE_METATYPE(Switch)
 
 #endif

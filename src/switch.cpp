@@ -28,6 +28,32 @@ Switch::Switch(const QBrush &brush, QWidget *parent)
   setBrush(brush);
 }
 
+//void Switch::paint(QPainter *painter, const QRect &, const QPalette &) const
+//{
+//  painter->save();
+//  painter->setRenderHint(QPainter::Antialiasing, true);
+//  painter->setPen(Qt::NoPen);
+//  if (isEnabled()) {
+//    painter->setBrush(mSwitch ? brush() : Qt::black);
+//    painter->setOpacity(mSwitch ? 0.5 : 0.38);
+//    painter->setRenderHint(QPainter::Antialiasing, true);
+//    painter->drawRoundedRect(QRect(mMargin, mMargin, width() - 2*mMargin, height() - 2 * mMargin), 8.0, 8.0);
+//    painter->setBrush(mThumb);
+//    painter->setOpacity(1.0);
+//    painter->drawEllipse(QRectF(offset() - (mHeight / 2), mY - (mHeight / 2)+8, height()-16, height()-16));
+//  }
+//  else {
+//    painter->setBrush(Qt::black);
+//    painter->setOpacity(0.12);
+//    painter->drawRoundedRect(QRect(mMargin, mMargin, width() - 2*mMargin, height() - 2 * mMargin), 8.0, 8.0);
+//    painter->setOpacity(1.0);
+//    painter->setBrush(QColor("#BDBDBD"));
+//    painter->drawEllipse(QRectF(offset() - (mHeight / 2), mY - (mHeight / 2), height(), height()));
+//  }
+
+//  painter->restore();
+//}
+
 void Switch::paintEvent(QPaintEvent *e)
 {
   QPainter p(this);

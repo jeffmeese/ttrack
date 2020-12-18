@@ -18,6 +18,16 @@ class Community
   Q_OBJECT
 
 public:
+  enum class TimePeriod
+  {
+    Today = 0,
+    ThisWeek = 1,
+    LastWeek = 2,
+    ThisMonth = 3,
+    LastMonth = 4
+  };
+
+public:
   Community();
   ~Community();
 
@@ -43,6 +53,7 @@ private slots:
 
 signals:
   void changed();
+  void workStatusChanged(bool working);
 
 private:
   using WorkPeriodPtr = std::unique_ptr<WorkPeriod>;

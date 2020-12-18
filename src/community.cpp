@@ -54,6 +54,7 @@ void Community::startWork()
   mCurrentWorkPeriod->setStart(QDateTime::currentDateTime());
   mTimer.start();
   mWorking = true;
+  emit workStatusChanged(mWorking);
 }
 
 void Community::stopWork()
@@ -65,6 +66,7 @@ void Community::stopWork()
   mCurrentWorkPeriod->setEnd(QDateTime::currentDateTime());
   mWorkPeriods.push_back(std::move(mCurrentWorkPeriod));
   mWorking = false;
+  emit workStatusChanged(mWorking);
 }
 
 int Community::timeWorkedToday() const

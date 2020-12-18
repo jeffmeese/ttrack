@@ -1,18 +1,18 @@
-#ifndef PROJECTMODEL_H
-#define PROJECTMODEL_H
+#ifndef COMMUNITYMODEL_H
+#define COMMUNITYMODEL_H
 
 #include <QAbstractTableModel>
 
 class Community;
 class Project;
 
-class ProjectModel
+class CommunityModel
     : public QAbstractTableModel
 {
   Q_OBJECT
 
 public:
-  ProjectModel();
+  CommunityModel();
 
 public:
   Project * project();
@@ -25,6 +25,7 @@ public:
   QVariant headerData(int section, Qt::Orientation orientataion, int role = Qt::DisplayRole) const override;
   QModelIndex parent(const QModelIndex & index) const override;
   int rowCount(const QModelIndex & parent = QModelIndex()) const override;
+  bool setData(const QModelIndex & index, const QVariant & value, int role = Qt::EditRole) override;
 
 private:
   QString formatTime(int seconds) const;
@@ -37,14 +38,4 @@ private:
   Project * mProject;
 };
 
-inline Project * ProjectModel::project()
-{
-  return mProject;
-}
-
-inline const Project * ProjectModel::project() const
-{
-  return mProject;
-}
-
-#endif // PROJECTMODEL_H
+#endif // COMMUNITYMODEL_H

@@ -27,6 +27,7 @@ public:
   std::size_t totalCommunities() const;
 
 public slots:
+  void handleWorkStatusChanged(bool working);
   void setModified(bool modified = true);
 
 signals:

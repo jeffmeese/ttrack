@@ -4,9 +4,11 @@ project(ttrack LANGUAGES CXX)
 
 set(HDR_FILES
   community.h
+  communitydelegate.h
+  communitymodel.h
+  communityview.h
   mainwindow.h
   project.h
-  projectmodel.h
   reportmodel.h
   switch.h
   workperiod.h
@@ -14,10 +16,12 @@ set(HDR_FILES
 
 set(SRC_FILES
   community.cpp
+  communitydelegate.cpp
+  communitymodel.cpp
+  communityview.cpp
   mainwindow.cpp
   main.cpp
   project.cpp
-  projectmodel.cpp
   reportmodel.cpp
   switch.cpp
   workperiod.cpp

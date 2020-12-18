@@ -37,7 +37,7 @@
       </property>
       <widget class="QWidget" name="cWorkday">
        <attribute name="title">
-        <string>Workday</string>
+        <string>Communities</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <property name="spacing">
@@ -56,7 +56,7 @@
          <number>0</number>
         </property>
         <item>
-         <widget class="QTableView" name="cProjectView">
+         <widget class="CommunityView" name="cCommunitiesView">
           <property name="editTriggers">
            <set>QAbstractItemView::NoEditTriggers</set>
           </property>
@@ -238,6 +238,13 @@
    </property>
   </action>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>CommunityView</class>
+   <extends>QTableView</extends>
+   <header>communityview.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

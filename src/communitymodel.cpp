@@ -1,21 +1,21 @@
-#include "projectmodel.h"
+#include "communitymodel.h"
 
 #include "community.h"
 #include "project.h"
 
 #include <QDebug>
 
-ProjectModel::ProjectModel()
+CommunityModel::CommunityModel()
   : mProject(nullptr)
 {
 }
 
-int ProjectModel::columnCount(const QModelIndex &) const
+int CommunityModel::columnCount(const QModelIndex &) const
 {
-  return 4;
+  return 5;
 }
 
-QVariant ProjectModel::data(const QModelIndex & index, int role) const
+QVariant CommunityModel::data(const QModelIndex & index, int role) const
 {
   if (mProject == nullptr)
     return QVariant();
@@ -25,7 +25,10 @@ QVariant ProjectModel::data(const QModelIndex & index, int role) const
     int col = index.column();
     if (row < (int)mProject->totalCommunities()) {
       const Community * community = mProject->getCommunity(row);
-      if (col == 1) {
+      if (col == 0) {
+        return community->working();
+      }
+      else if (col == 1) {
         return community->name();
       }
       else if (col == 2) {
@@ -34,12 +37,15 @@ QVariant ProjectModel::data(const QModelIndex & index, int role) const
       else if (col == 3) {
         return formatTime(community->totalTimeWorked());
       }
+      else if (col == 4) {
+        return formatTime(community->totalTimeWorked());
+      }
     }
   }
   return QVariant();
 }
 
-QString ProjectModel::formatTime(int seconds) const
+QString CommunityModel::formatTime(int seconds) const
 {
   int hours = 0, minutes = 0;
   while (seconds >= 3600) {
@@ -56,17 +62,19 @@ QString ProjectModel::formatTime(int seconds) const
   return s1;
 }
 
-void ProjectModel::handleAddCommunity(Community *)
+void CommunityModel::handleAddCommunity(Community * community)
+{
+  int totalRows = rowCount();
+
+  emit layoutChanged();
+}
+
+void CommunityModel::handleProjectModified()
 {
   emit layoutChanged();
 }
 
-void ProjectModel::handleProjectModified()
-{
-  emit layoutChanged();
-}
-
-QVariant ProjectModel::headerData(int section, Qt::Orientation orientataion, int role) const
+QVariant CommunityModel::headerData(int section, Qt::Orientation orientataion, int role) const
 {
   if (role == Qt::DisplayRole) {
     if (orientataion == Qt::Horizontal) {
@@ -77,27 +85,49 @@ QVariant ProjectModel::headerData(int section, Qt::Orientation orientataion, int
         return "Community";
       }
       else if (section == 2) {
-        return "Time Worked Today";
+        return "Time Today";
       }
       else if (section == 3) {
-        return "Total Time Worked";
+        return "Time This Week";
+      }
+      else if (section == 4) {
+        return "Time This Month";
       }
     }
   }
   return QVariant();
 }
 
-QModelIndex ProjectModel::parent(const QModelIndex &) const
+QModelIndex CommunityModel::parent(const QModelIndex &) const
 {
   return QModelIndex();
 }
 
-int ProjectModel::rowCount(const QModelIndex &) const
+int CommunityModel::rowCount(const QModelIndex &) const
 {
   return (mProject != nullptr) ? static_cast<int>(mProject->totalCommunities()) : 0;
 }
 
-void ProjectModel::setProject(Project *project)
+bool CommunityModel::setData(const QModelIndex & index, const QVariant & value, int role)
+{
+  if (role != Qt::EditRole)
+    return QAbstractTableModel::setData(index, value, role);
+
+  if (index.column() != 0) {
+    return QAbstractTableModel::setData(index, value, role);
+  }
+
+  bool v = value.toBool();
+  Community * community = mProject->getCommunity(index.row());
+  if (v)
+    community->startWork();
+  else
+    community->stopWork();
+
+  emit layoutChanged();
+}
+
+void CommunityModel::setProject(Project *project)
 {
   mProject = project;
   if (mProject != nullptr) {

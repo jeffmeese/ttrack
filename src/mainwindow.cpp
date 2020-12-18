@@ -1,9 +1,9 @@
 #include "mainwindow.h"
-#include "./ui_mainwindow.h"
+#include "ui_mainwindow.h"
 
 #include "community.h"
+#include "communitymodel.h"
 #include "project.h"
-#include "projectmodel.h"
 #include "reportmodel.h"
 #include "switch.h"
 #include "workperiod.h"
@@ -27,25 +27,12 @@ MainWindow::~MainWindow()
 {
 }
 
-void MainWindow::addCommunity(Community * community)
-{
-  std::size_t totalCommunities = mProject->totalCommunities();
-  Switch * sw = new Switch;
-  sw->resize(20, 20);
-  mSwitchMap.insert(std::make_pair(sw, community));
-
-  connect(sw, SIGNAL(clicked()), SLOT(handleSliderClick()));
-  mUi->cProjectView->setIndexWidget(mProjectModel->index(totalCommunities, 0), sw);
-}
-
 void MainWindow::handleAddCommunity()
 {
   std::size_t totalCommunities = mProject->totalCommunities();
   QString name = "Community " + QString::number(totalCommunities + 1);
   std::unique_ptr<Community> community(new Community);
   community->setName(name);
-
-  addCommunity(community.get());
   mProject->addCommunity(std::move(community));
 }
 
@@ -91,34 +78,9 @@ void MainWindow::handleSaveProjectAs()
 
 }
 
-void MainWindow::handleSliderClick()
-{
-  Switch * s = (Switch*)sender();
-  auto itr = mSwitchMap.find(s);
-  if (itr != mSwitchMap.end()) {
-    Community * c = itr->second;
-    if (c->working()) {
-      c->stopWork();
-      mUpdateTimer.stop();
-    }
-    else {
-      for (auto itr2 = mSwitchMap.begin(); itr2 != mSwitchMap.end(); ++itr2) {
-        Community * c2 = itr2->second;
-        Switch * s2 = itr2->first;
-        if (c2 != c) {
-          c2->stopWork();
-          s2->setOn(false);
-        }
-      }
-      c->startWork();
-      mUpdateTimer.start();
-    }
-  }
-}
-
 void MainWindow::handleUpdate()
 {
-  mUi->cProjectView->update();
+  mUi->cCommunitiesView->update();
 }
 
 void MainWindow::initActions()
@@ -129,7 +91,6 @@ void MainWindow::initActions()
   connect(mUi->actionSave_Project_As, SIGNAL(triggered()), SLOT(handleSaveProjectAs()));
   connect(mUi->actionOptions, SIGNAL(triggered()), SLOT(handleOptions()));
   connect(mUi->actionExit, SIGNAL(triggered()), SLOT(handleExit()));
-
   connect(mUi->actionAdd_Community, SIGNAL(triggered()), SLOT(handleAddCommunity()));
   connect(mUi->actionAdd_Work_Period, SIGNAL(triggered()), SLOT(handleAddWorkPeriod()));
 }
@@ -151,6 +112,8 @@ void MainWindow::initUi()
 
   mUi->cFilter->addItem("All Communities", CommunityFilter::All);
   mUi->cFilter->addItem("Active Communities", CommunityFilter::Active);
+  mUi->cReports->setVisible(false);
+  mUi->cTabWidget->removeTab(1);
 
   mUpdateTimer.setInterval(1000);
   connect(&mUpdateTimer, SIGNAL(timeout()), SLOT(handleUpdate()));
@@ -161,29 +124,34 @@ void MainWindow::newProject()
 {
   mProject.reset(new Project);
 
-  mProjectModel.reset(new ProjectModel);
-  mProjectModel->setProject(mProject.get());
-  mUi->cProjectView->setModel(mProjectModel.get());
+  mCommunityModel.reset(new CommunityModel);
+  mCommunityModel->setProject(mProject.get());
+  mUi->cCommunitiesView->setModel(mCommunityModel.get());
 
-  mReportModel.reset(new ReportModel);
-  mReportModel->setProject(mProject.get());
-  mUi->cReportView->setModel(mReportModel.get());
-
-  std::unique_ptr<Community> aspenGlen(new Community);
-  aspenGlen->setName("Aspen Glen");
+  std::unique_ptr<Community> pheasantGlen(new Community);
+  pheasantGlen->setName("Pheasant Glen");
   QDateTime start(QDate(2020, 12, 16), QTime(12, 25, 30));
   QDateTime end(QDate(2020, 12, 16), QTime(14, 25, 0));
-  aspenGlen->addWorkPeriod(std::unique_ptr<WorkPeriod>(new WorkPeriod(start, end)));
-  addCommunity(aspenGlen.get());
-  mProject->addCommunity(std::move(aspenGlen));
+  pheasantGlen->addWorkPeriod(std::unique_ptr<WorkPeriod>(new WorkPeriod(start, end)));
+  mProject->addCommunity(std::move(pheasantGlen));
 
-  std::unique_ptr<Community> riverwalk(new Community);
-  riverwalk->setName("Riverwalk");
-  QDateTime start1(QDate(2020, 12, 16), QTime(14, 45, 0));
-  QDateTime end1(QDate(2020, 12, 16), QTime(15, 25, 0));
-  riverwalk->addWorkPeriod(std::unique_ptr<WorkPeriod>(new WorkPeriod(start1, end1)));
-  addCommunity(riverwalk.get());
-  mProject->addCommunity(std::move(riverwalk));
+  std::unique_ptr<Community> countryWalk1(new Community);
+  countryWalk1->setName("County Walk 1");
+  start.setDate(QDate(2020, 12, 16));
+  start.setTime(QTime(14, 45, 0));
+  end.setDate(QDate(2020, 12, 16));
+  end.setTime(QTime(15, 25, 0));
+  countryWalk1->addWorkPeriod(std::unique_ptr<WorkPeriod>(new WorkPeriod(start, end)));
+  mProject->addCommunity(std::move(countryWalk1));
+
+  std::unique_ptr<Community> countryWalk3(new Community);
+  countryWalk3->setName("County Walk 3");
+  start.setDate(QDate(2020, 12, 17));
+  start.setTime(QTime(16, 45, 0));
+  end.setDate(QDate(2020, 12, 17));
+  end.setTime(QTime(18, 0, 0));
+  countryWalk3->addWorkPeriod(std::unique_ptr<WorkPeriod>(new WorkPeriod(start, end)));
+  mProject->addCommunity(std::move(countryWalk3));
 }
 
 void MainWindow::stopAllWork()

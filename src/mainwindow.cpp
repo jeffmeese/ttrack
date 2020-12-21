@@ -2,13 +2,15 @@
 #include "ui_mainwindow.h"
 
 #include "community.h"
+#include "communitydialog.h"
 #include "communitymodel.h"
+#include "overviewtabmodel.h"
 #include "project.h"
-#include "reportmodel.h"
-#include "switch.h"
 #include "workperiod.h"
+#include "workperioddialog.h"
 
 #include <chrono>
+#include <sstream>
 #include <thread>
 
 #include <QDebug>
@@ -16,11 +18,11 @@
 MainWindow::MainWindow(QWidget *parent)
   : QMainWindow(parent)
   , mUi(new Ui::MainWindow)
+  , mFileName("jeff.tta")
 {
   initUi();
   initActions();
   newProject();
-  updateTimeControls();
 }
 
 MainWindow::~MainWindow()
@@ -29,33 +31,55 @@ MainWindow::~MainWindow()
 
 void MainWindow::handleAddCommunity()
 {
-  std::size_t totalCommunities = mProject->totalCommunities();
-  QString name = "Community " + QString::number(totalCommunities + 1);
+  CommunityDialog dialog(this);
+  int response = dialog.exec();
+  if (response == QDialog::Rejected) {
+    return;
+  }
+
+  QString name = dialog.name();
   std::unique_ptr<Community> community(new Community);
   community->setName(name);
+  community->setDescription(dialog.description());
+  for (std::size_t i = 0; i < dialog.totalBoardMembers(); i++) {
+    BoardMember boardMember = dialog.getBoardMember(i);
+    std::unique_ptr<BoardMember> newBoardMember(new BoardMember(boardMember));
+    community->addBoardMember(std::move(newBoardMember));
+  }
+
   mProject->addCommunity(std::move(community));
 }
 
 void MainWindow::handleAddWorkPeriod()
 {
+  WorkPeriodDialog dialog(this);
+  for (std::size_t i = 0; i < mProject->totalCommunities(); i++) {
+    Community * community = mProject->getCommunity(i);
+    dialog.addCommunity(community);
+  }
 
+  int response = dialog.exec();
+  if (response == QDialog::Rejected) {
+    return;
+  }
 }
 
-void MainWindow::closeEvent(QCloseEvent * event)
+void MainWindow::closeEvent(QCloseEvent *)
 {
-  qDebug() << QObject::tr(__FUNCTION__);
   stopAllWork();
+  mProject->saveToFile(mFileName);
 }
 
 void MainWindow::handleExit()
 {
   stopAllWork();
+  mProject->saveToFile(mFileName);
   QApplication::quit();
 }
 
 void MainWindow::handleOpenProject()
 {
-
+  openProject(mFileName);
 }
 
 void MainWindow::handleOptions()
@@ -63,31 +87,49 @@ void MainWindow::handleOptions()
 
 }
 
-void MainWindow::handleNewProject()
+void MainWindow::handleProjectModified(bool)
 {
-
+  mProject->saveToFile(mFileName);
 }
 
-void MainWindow::handleSaveProject()
+void MainWindow::handleNewProject()
 {
-
+  newProject();
 }
 
 void MainWindow::handleSaveProjectAs()
 {
-
+  saveProject(mFileName);
 }
 
-void MainWindow::handleUpdate()
+void MainWindow::handleShowCommunityTab(Community * community)
 {
-  mUi->cCommunitiesView->update();
+  TabWidgetTable::iterator itr = mTabTable.find(community);
+  if (itr != mTabTable.end()) {
+    for (int i = 0; i < mUi->cTabWidget->count(); i++) {
+      QWidget * widget = mUi->cTabWidget->widget(i);
+      if (itr->second == widget) {
+        mUi->cTabWidget->setCurrentIndex(i);
+        return;
+      }
+    }
+  }
+
+  QTableView * tableView = new QTableView(mUi->cTabWidget);
+  tableView->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+
+  CommunityModel * model = new CommunityModel;
+  model->setCommunity(community);
+  tableView->setModel(model);
+  int index = mUi->cTabWidget->addTab(tableView, community->name());
+  mUi->cTabWidget->setCurrentIndex(index);
+  mTabTable[community] = tableView;
 }
 
 void MainWindow::initActions()
 {
   connect(mUi->actionNew_Project, SIGNAL(triggered()), SLOT(handleNewProject()));
   connect(mUi->actionOpen_Project, SIGNAL(triggered()), SLOT(handleOpenProject()));
-  connect(mUi->actionSave_Project, SIGNAL(triggered()), SLOT(handleSaveProject()));
   connect(mUi->actionSave_Project_As, SIGNAL(triggered()), SLOT(handleSaveProjectAs()));
   connect(mUi->actionOptions, SIGNAL(triggered()), SLOT(handleOptions()));
   connect(mUi->actionExit, SIGNAL(triggered()), SLOT(handleExit()));
@@ -98,60 +140,35 @@ void MainWindow::initActions()
 void MainWindow::initUi()
 {
   mUi->setupUi(this);
-
-  mUi->cStartTime->setEnabled(false);
-  mUi->cEndTime->setEnabled(false);
-
-  mUi->cDateRange->addItem("Today", QVariant(DateFilter::Today));
-  mUi->cDateRange->addItem("Yesterday", QVariant(DateFilter::Yesterday));
-  mUi->cDateRange->addItem("This Month", QVariant(DateFilter::ThisMonth));
-  mUi->cDateRange->addItem("Last Month", QVariant(DateFilter::LastMonth));
-  mUi->cDateRange->addItem("This Year", QVariant(DateFilter::ThisYear));
-  mUi->cDateRange->addItem("Last Year", QVariant(DateFilter::LastYear));
-  mUi->cDateRange->addItem("Custom", QVariant(DateFilter::Custom));
-
-  mUi->cFilter->addItem("All Communities", CommunityFilter::All);
-  mUi->cFilter->addItem("Active Communities", CommunityFilter::Active);
-  mUi->cReports->setVisible(false);
   mUi->cTabWidget->removeTab(1);
-
-  mUpdateTimer.setInterval(1000);
-  connect(&mUpdateTimer, SIGNAL(timeout()), SLOT(handleUpdate()));
-  connect(mUi->cDateRange, SIGNAL(currentIndexChanged(int)), SLOT(updateTimeControls()));
 }
 
 void MainWindow::newProject()
 {
   mProject.reset(new Project);
 
-  mCommunityModel.reset(new CommunityModel);
-  mCommunityModel->setProject(mProject.get());
-  mUi->cCommunitiesView->setModel(mCommunityModel.get());
+  mOverviewTabModel.reset(new OverviewTabModel);
+  mOverviewTabModel->setProject(mProject.get());
+  mUi->cCommunitiesView->setModel(mOverviewTabModel.get());
 
-  std::unique_ptr<Community> pheasantGlen(new Community);
-  pheasantGlen->setName("Pheasant Glen");
-  QDateTime start(QDate(2020, 12, 16), QTime(12, 25, 30));
-  QDateTime end(QDate(2020, 12, 16), QTime(14, 25, 0));
-  pheasantGlen->addWorkPeriod(std::unique_ptr<WorkPeriod>(new WorkPeriod(start, end)));
-  mProject->addCommunity(std::move(pheasantGlen));
+  connect(mProject.get(), SIGNAL(modified(bool)), SLOT(handleProjectModified(bool)));
+  connect(mUi->cCommunitiesView, SIGNAL(showCommunity(Community*)), SLOT(handleShowCommunityTab(Community*)));
 
-  std::unique_ptr<Community> countryWalk1(new Community);
-  countryWalk1->setName("County Walk 1");
-  start.setDate(QDate(2020, 12, 16));
-  start.setTime(QTime(14, 45, 0));
-  end.setDate(QDate(2020, 12, 16));
-  end.setTime(QTime(15, 25, 0));
-  countryWalk1->addWorkPeriod(std::unique_ptr<WorkPeriod>(new WorkPeriod(start, end)));
-  mProject->addCommunity(std::move(countryWalk1));
+  updateWindowTitle();
+}
 
-  std::unique_ptr<Community> countryWalk3(new Community);
-  countryWalk3->setName("County Walk 3");
-  start.setDate(QDate(2020, 12, 17));
-  start.setTime(QTime(16, 45, 0));
-  end.setDate(QDate(2020, 12, 17));
-  end.setTime(QTime(18, 0, 0));
-  countryWalk3->addWorkPeriod(std::unique_ptr<WorkPeriod>(new WorkPeriod(start, end)));
-  mProject->addCommunity(std::move(countryWalk3));
+void MainWindow::openProject(const QString & fileName)
+{
+  newProject();
+  mProject->loadFromFile(fileName);
+  mFileName = fileName;
+  updateWindowTitle();
+}
+
+void MainWindow::saveProject(const QString & fileName)
+{
+  mProject->saveToFile(fileName);
+  mFileName = fileName;
 }
 
 void MainWindow::stopAllWork()
@@ -163,62 +180,11 @@ void MainWindow::stopAllWork()
       community->stopWork();
   }
 }
-void MainWindow::updateTimeControls()
+
+void MainWindow::updateWindowTitle()
 {
-  qDebug() << QObject::tr(__FUNCTION__);
-  mUi->cStartTime->setEnabled(false);
-  mUi->cEndTime->setEnabled(false);
-
-  QDate date = QDate::currentDate();
-  QDate startDate = QDate::currentDate();
-  QDate endDate = QDate::currentDate();
-
-  int startHour = 0;
-  int endHour = 23;
-  int startMinute = 0;
-  int endMinute = 59;
-  int startSecond = 0;
-  int endSecond = 59;
-
-  QVariant v = mUi->cDateRange->itemData(mUi->cDateRange->currentIndex());
-  int data = v.toInt();
-  switch (data) {
-  case DateFilter::Today:
-    break;
-  case DateFilter::Yesterday:
-    startDate = startDate.addDays(-1);
-    endDate = endDate.addDays(-1);
-    break;
-  case DateFilter::ThisMonth:
-    startDate.setDate(startDate.year(), startDate.month(), 1);
-    endDate.setDate(endDate.year(), endDate.month(), endDate.daysInMonth());
-    break;
-  case DateFilter::LastMonth:
-    startDate = startDate.addMonths(-1);
-    endDate = endDate.addMonths(-1);
-    startDate.setDate(startDate.year(), startDate.month(), 1);
-    endDate.setDate(endDate.year(), endDate.month(), endDate.daysInMonth());
-    break;
-  case DateFilter::ThisYear:
-    startDate.setDate(startDate.year(), 1, 1);
-    endDate.setDate(endDate.year(), 12, 31);
-    break;
-  case DateFilter::LastYear:
-    startDate = startDate.addYears(-1);
-    endDate = endDate.addYears(-1);
-    startDate.setDate(startDate.year(), 1, 1);
-    endDate.setDate(endDate.year(), 12, 31);
-    break;
-  }
-
-  //QDate startDate(date);
-  QTime startTime(startHour, startMinute, startSecond);
-
-  //QDate endDate(date);
-  QTime endTime(endHour, endMinute, endSecond);
-
-  mUi->cStartTime->setDate(startDate);
-  mUi->cStartTime->setTime(startTime);
-  mUi->cEndTime->setDate(endDate);
-  mUi->cEndTime->setTime(endTime);
+  std::ostringstream oss;
+  oss << "Community Time Tracker - ";
+  oss << mFileName.toStdString();
+  setWindowTitle(QString::fromStdString(oss.str()));
 }

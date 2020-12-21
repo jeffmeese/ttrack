@@ -1,5 +1,12 @@
 #include "workperiod.h"
 
+#include "streamio.h"
+
+#include <QDataStream>
+
+static const QString TYPE_ID("WorkPeriod");
+static const int32_t SAVE_VERSION = 1;
+
 WorkPeriod::WorkPeriod()
 {
   setStart(QDateTime::currentDateTime());
@@ -33,6 +40,32 @@ QDate WorkPeriod::endDate() const
 QTime WorkPeriod::endTime() const
 {
   return mEndTime;
+}
+
+void WorkPeriod::loadFromDataStream(QDataStream &dataStream)
+{
+  int32_t version = 0;
+  dataStream >> version;
+
+  QDateTime startDateTime = QDateTime::fromString(streamio::readString(dataStream));
+  QDateTime endDateTime = QDateTime::fromString(streamio::readString(dataStream));
+
+  mStartDate = startDateTime.date();
+  mStartTime = startDateTime.time();
+  mEndDate = endDateTime.date();
+  mEndTime = endDateTime.time();
+}
+
+void WorkPeriod::saveToDataStream(QDataStream &dataStream) const
+{
+  streamio::writeString(TYPE_ID, dataStream);
+  dataStream << SAVE_VERSION;
+
+  QDateTime start(mStartDate, mStartTime);
+  streamio::writeString(start.toString(), dataStream);
+
+  QDateTime end(mEndDate, mEndTime);
+  streamio::writeString(end.toString(), dataStream);
 }
 
 QDateTime WorkPeriod::start() const

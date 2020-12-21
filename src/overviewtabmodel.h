@@ -1,18 +1,18 @@
-#ifndef REPORTMODEL_H
-#define REPORTMODEL_H
+#ifndef OVERVIEWTABMODEL_H
+#define OVERVIEWTABMODEL_H
 
 #include <QAbstractTableModel>
 
 class Community;
 class Project;
 
-class ReportModel
+class OverviewTabModel
     : public QAbstractTableModel
 {
   Q_OBJECT
 
 public:
-  ReportModel();
+  OverviewTabModel();
 
 public:
   Project * project();
@@ -25,16 +25,18 @@ public:
   QVariant headerData(int section, Qt::Orientation orientataion, int role = Qt::DisplayRole) const override;
   QModelIndex parent(const QModelIndex & index) const override;
   int rowCount(const QModelIndex & parent = QModelIndex()) const override;
+  bool setData(const QModelIndex & index, const QVariant & value, int role = Qt::EditRole) override;
 
 private:
   QString formatTime(int seconds) const;
 
 private slots:
   void handleAddCommunity(Community * community);
+  void handleCommunityChanged();
   void handleProjectModified();
 
 private:
   Project * mProject;
 };
 
-#endif // REPORTMODEL_H
+#endif // OVERVIEWTABMODEL_H

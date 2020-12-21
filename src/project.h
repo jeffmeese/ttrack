@@ -1,6 +1,7 @@
 #ifndef PROJECT_H
 #define PROJECT_H
 
+#include <QDataStream>
 #include <QObject>
 
 #include <memory>
@@ -24,6 +25,10 @@ public:
   void addCommunity(std::unique_ptr<Community> community);
   const Community * getCommunity(std::size_t index) const;
   Community * getCommunity(std::size_t index);
+  void loadFromFile(const QString & fileName);
+  void loadFromStream(QDataStream & dataStream);
+  void saveToFile(const QString & fileName) const;
+  void saveToStream(QDataStream & dataStream) const;
   std::size_t totalCommunities() const;
 
 public slots:

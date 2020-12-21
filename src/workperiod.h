@@ -31,35 +31,15 @@ public:
 
 public:
   int duration() const;
+  void loadFromDataStream(QDataStream & dataStream);
+  void saveToDataStream(QDataStream & dataStream) const;
 
 private:
   QDate mStartDate;
   QDate mEndDate;
   QTime mStartTime;
   QTime mEndTime;
-  //TimePoint mStart;
-  //TimePoint mStop;
 };
-
-//inline WorkPeriod::TimePoint WorkPeriod::startTime() const
-//{
-//  return mStart;
-//}
-
-//inline WorkPeriod::TimePoint WorkPeriod::stopTime() const
-//{
-//  return mStop;
-//}
-
-//inline void WorkPeriod::setStartTime(const TimePoint & value)
-//{
-//  mStart = value;
-//}
-
-//inline void WorkPeriod::setStopTime(const TimePoint & value)
-//{
-//  mStop = value;
-//}
 
 
 #endif // WORKPERIOD_H

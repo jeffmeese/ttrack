@@ -8,11 +8,8 @@
 #include <memory>
 
 class Community;
-class CommunityModel;
-class CommunityView;
+class OverviewTabModel;
 class Project;
-class ReportModel;
-class Switch;
 namespace Ui
 {
 class MainWindow;
@@ -36,16 +33,18 @@ private slots:
   void handleNewProject();
   void handleOpenProject();
   void handleOptions();
-  void handleSaveProject();
+  void handleProjectModified(bool modified);
   void handleSaveProjectAs();
-  void handleUpdate();
-  void updateTimeControls();
+  void handleShowCommunityTab(Community * community);
 
 private:
   void initActions();
   void initUi();
   void newProject();
+  void openProject(const QString & fileName);
+  void saveProject(const QString & fileName);
   void stopAllWork();
+  void updateWindowTitle();
 
 private:
   enum DateFilter
@@ -66,9 +65,13 @@ private:
   };
 
 private:
+  using TabWidgetTable = std::map<Community*, QWidget*>;
+
+private:
   std::unique_ptr<Ui::MainWindow> mUi;
   std::unique_ptr<Project> mProject;
-  std::unique_ptr<CommunityModel> mCommunityModel;
-  QTimer mUpdateTimer;
+  std::unique_ptr<OverviewTabModel> mOverviewTabModel;
+  TabWidgetTable mTabTable;
+  QString mFileName;
 };
 #endif // MAINWINDOW_H

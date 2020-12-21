@@ -1,13 +1,13 @@
-#include "communitydelegate.h"
+#include "overviewtabdelegate.h"
 
 #include <QDebug>
 #include <QPainter>
 
-CommunityDelegate::CommunityDelegate()
+OverviewTabDelegate::OverviewTabDelegate()
 {
 }
 
-void CommunityDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
+void OverviewTabDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
   const QRect r = option.rect;
   int h = 1;

@@ -1,18 +1,18 @@
-#ifndef COMMUNITYDELEGATE_H
-#define COMMUNITYDELEGATE_H
+#ifndef OVERVIEWTABDELEGATE_H
+#define OVERVIEWTABDELEGATE_H
 
 #include <QStyledItemDelegate>
 
-class CommunityDelegate
+class OverviewTabDelegate
     : public QStyledItemDelegate
 {
   Q_OBJECT
 
 public:
-  CommunityDelegate();
+  OverviewTabDelegate();
 
 protected:
   void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
 };
 
-#endif // COMMUNITYDELEGATE_H
+#endif // OVERVIEWTABDELEGATE_H

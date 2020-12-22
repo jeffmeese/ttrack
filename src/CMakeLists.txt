@@ -8,6 +8,7 @@ set(HDR_FILES
   community.h
   communitydialog.h
   communitymodel.h
+  communityview.h
   mainwindow.h
   overviewtabdelegate.h
   overviewtabmodel.h
@@ -24,6 +25,7 @@ set(SRC_FILES
   community.cpp
   communitydialog.cpp
   communitymodel.cpp
+  communityview.cpp
   mainwindow.cpp
   main.cpp
   overviewtabdelegate.cpp

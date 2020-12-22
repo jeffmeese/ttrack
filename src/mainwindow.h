@@ -29,6 +29,8 @@ protected:
 private slots:
   void handleAddCommunity();
   void handleAddWorkPeriod();
+  void handleAboutToShowProgram();
+  void handleAboutToShowCommunities();
   void handleExit();
   void handleNewProject();
   void handleOpenProject();
@@ -36,6 +38,7 @@ private slots:
   void handleProjectModified(bool modified);
   void handleSaveProjectAs();
   void handleShowCommunityTab(Community * community);
+  void handleTabClosed(int index);
 
 private:
   void initActions();

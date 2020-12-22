@@ -12,7 +12,7 @@ OverviewTabModel::OverviewTabModel()
 
 int OverviewTabModel::columnCount(const QModelIndex &) const
 {
-  return 5;
+  return 6;
 }
 
 QVariant OverviewTabModel::data(const QModelIndex & index, int role) const
@@ -29,26 +29,35 @@ QVariant OverviewTabModel::data(const QModelIndex & index, int role) const
         return community->working();
       }
       else if (col == 1) {
-        return community->name();
+        return community->active();
       }
       else if (col == 2) {
-        return formatTime(community->timeWorkedToday());
+        return community->name();
       }
       else if (col == 3) {
-        return formatTime(community->timeWorkedThisWeek());
+        return formatTime(community->timeWorkedToday());
       }
       else if (col == 4) {
+        return formatTime(community->timeWorkedThisWeek());
+      }
+      else if (col == 5) {
         return formatTime(community->timeWorkedThisMonth());
       }
     }
   }
 
-  if (role == Qt::UserRole) {
+  if (role == CommunityRole) {
     int row = index.row();
     Community * community = mProject->getCommunity(row);
 
     QVariant v;
     v.setValue(community);
+    return v;
+  }
+
+  if (role == ProjectRole) {
+    QVariant v;
+    v.setValue(mProject);
     return v;
   }
 
@@ -96,15 +105,18 @@ QVariant OverviewTabModel::headerData(int section, Qt::Orientation orientataion,
         return "Status";
       }
       else if (section == 1) {
-        return "Community";
+        return "Active";
       }
       else if (section == 2) {
-        return "Time Today";
+        return "Community";
       }
       else if (section == 3) {
-        return "Time This Week";
+        return "Time Today";
       }
       else if (section == 4) {
+        return "Time This Week";
+      }
+      else if (section == 5) {
         return "Time This Month";
       }
     }
@@ -146,7 +158,9 @@ void OverviewTabModel::setProject(Project *project)
 {
   mProject = project;
   if (mProject != nullptr) {
+    emit layoutAboutToBeChanged();
     connect(mProject, SIGNAL(communityAdded(Community *)), SLOT(handleAddCommunity(Community*)));
     connect(mProject, SIGNAL(modified(bool)), SLOT(handleProjectModified()));
+    emit layoutChanged();
   }
 }

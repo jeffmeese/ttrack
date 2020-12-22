@@ -36,11 +36,13 @@ bool Community::active() const
 void Community::addBoardMember(std::unique_ptr<BoardMember> boardMember)
 {
   mBoardMembers.push_back(std::move(boardMember));
+  emit changed();
 }
 
 void Community::addWorkPeriod(std::unique_ptr<WorkPeriod> workPeriod)
 {
   mWorkPeriods.push_back(std::move(workPeriod));
+  emit changed();
 }
 
 QString Community::description() const
@@ -70,8 +72,28 @@ const WorkPeriod * Community::getWorkPeriod(std::size_t index) const
 
 void Community::loadFromDataStream(QDataStream &dataStream)
 {
-  int32_t version = 0;
-  dataStream >> version;
+  int32_t version = streamio::readInt32(dataStream);
+  mName = streamio::readString(dataStream);
+  mDescription = streamio::readString(dataStream);
+  mActive = (streamio::readInt32(dataStream) > 0);
+
+  mBoardMembers.clear();
+  int32_t numBoardMembers = streamio::readInt32(dataStream);
+  for (int32_t i = 0;i < numBoardMembers; i++) {
+    streamio::readString(dataStream); // Skip the ID portion
+    std::unique_ptr<BoardMember> boardMember(new BoardMember);
+    boardMember->loadFromDataStream(dataStream);
+    mBoardMembers.push_back(std::move(boardMember));
+  }
+
+  mWorkPeriods.clear();
+  int32_t numWorkPeriods = streamio::readInt32(dataStream);
+  for (int32_t i = 0; i < numWorkPeriods; i++) {
+    streamio::readString(dataStream); // Skip the ID portion
+    WorkPeriodPtr workPeriod(new WorkPeriod);
+    workPeriod->loadFromDataStream(dataStream);
+    mWorkPeriods.push_back(std::move(workPeriod));
+  }
 }
 
 QString Community::name() const
@@ -83,6 +105,23 @@ void Community::removeAllBoardMembers()
 {
   mBoardMembers.clear();
   emit changed();
+}
+
+bool Community::removeWorkPeriod(WorkPeriod *workPeriod)
+{
+  for (WorkPeriodVector::iterator itr = mWorkPeriods.begin(); itr != mWorkPeriods.end(); ++itr) {
+    if (itr->get() == workPeriod) {
+      mWorkPeriods.erase(itr);
+      emit changed();
+      return true;
+    }
+  }
+  return false;
+}
+
+bool Community::removeWorkPeriod(int index)
+{
+  return removeWorkPeriod(mWorkPeriods.at(index).get());
 }
 
 void Community::saveToDataStream(QDataStream &dataStream) const

@@ -27,6 +27,7 @@ void Project::addCommunity(std::unique_ptr<Community> community)
   connect(c, SIGNAL(workStatusChanged(bool)), SLOT(handleWorkStatusChanged(bool)));
   mCommunities.push_back(std::move(community));
   emit communityAdded(c);
+  emit modified(true);
 }
 
 void Project::handleWorkStatusChanged(bool working)
@@ -62,16 +63,32 @@ void Project::loadFromStream(QDataStream &dataStream)
     throw std::invalid_argument(oss.str());
   }
 
-  int32_t fileVersion = 0;
-  dataStream >> fileVersion;
-
-  int32_t totalCommunities = 0;
-  dataStream >> totalCommunities;
-  QString id = streamio::readString(dataStream);
+  int32_t fileVersion = streamio::readInt32(dataStream);
+  int32_t totalCommunities = streamio::readInt32(dataStream);
   for (int i = 0; i < totalCommunities; i++) {
+    streamio::readString(dataStream); // Skip ID
     std::unique_ptr<Community> community(new Community);
     community->loadFromDataStream(dataStream);
+    mCommunities.push_back(std::move(community));
   }
+}
+
+bool Project::removeCommunity(Community *community)
+{
+  for (CommunityVector::iterator itr = mCommunities.begin(); itr != mCommunities.end(); ++itr) {
+    if (itr->get() == community) {
+      mCommunities.erase(itr);
+      emit modified();
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool Project::removeCommunity(std::size_t index)
+{
+  return removeCommunity(mCommunities.at(index).get());
 }
 
 void Project::saveToFile(const QString &fileName) const

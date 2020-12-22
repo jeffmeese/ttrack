@@ -42,6 +42,11 @@ QTime WorkPeriod::endTime() const
   return mEndTime;
 }
 
+QString WorkPeriod::notes() const
+{
+  return mNotes;
+}
+
 void WorkPeriod::loadFromDataStream(QDataStream &dataStream)
 {
   int32_t version = 0;
@@ -49,6 +54,7 @@ void WorkPeriod::loadFromDataStream(QDataStream &dataStream)
 
   QDateTime startDateTime = QDateTime::fromString(streamio::readString(dataStream));
   QDateTime endDateTime = QDateTime::fromString(streamio::readString(dataStream));
+  mNotes = streamio::readString(dataStream);
 
   mStartDate = startDateTime.date();
   mStartTime = startDateTime.time();
@@ -66,6 +72,13 @@ void WorkPeriod::saveToDataStream(QDataStream &dataStream) const
 
   QDateTime end(mEndDate, mEndTime);
   streamio::writeString(end.toString(), dataStream);
+
+  streamio::writeString(mNotes, dataStream);
+}
+
+void WorkPeriod::setNotes(const QString &notes)
+{
+  mNotes = notes;
 }
 
 QDateTime WorkPeriod::start() const

@@ -48,23 +48,35 @@
        <attribute name="title">
         <string>Communities</string>
        </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_2">
-        <property name="spacing">
-         <number>0</number>
-        </property>
-        <property name="leftMargin">
-         <number>0</number>
-        </property>
-        <property name="topMargin">
-         <number>0</number>
-        </property>
-        <property name="rightMargin">
-         <number>0</number>
-        </property>
-        <property name="bottomMargin">
-         <number>0</number>
-        </property>
-        <item>
+       <layout class="QGridLayout" name="gridLayout">
+        <item row="0" column="0">
+         <layout class="QHBoxLayout" name="horizontalLayout">
+          <item>
+           <widget class="QLabel" name="label">
+            <property name="text">
+             <string>Filter</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="cFilter"/>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </item>
+        <item row="1" column="0">
          <widget class="OverviewTabView" name="cCommunitiesView">
           <property name="editTriggers">
            <set>QAbstractItemView::NoEditTriggers</set>
@@ -107,11 +119,9 @@
    </widget>
    <widget class="QMenu" name="menuProject">
     <property name="title">
-     <string>Time File</string>
+     <string>Communities</string>
     </property>
-    <addaction name="actionCommunity_List"/>
     <addaction name="actionAdd_Community"/>
-    <addaction name="separator"/>
     <addaction name="actionAdd_Work_Period"/>
    </widget>
    <addaction name="menuProgram"/>
@@ -125,22 +135,17 @@
   </action>
   <action name="actionNew_Project">
    <property name="text">
-    <string>New Time File</string>
+    <string>New File</string>
    </property>
   </action>
   <action name="actionOpen_Project">
    <property name="text">
-    <string>Open Time File</string>
-   </property>
-  </action>
-  <action name="actionSave_Project">
-   <property name="text">
-    <string>Save Time File</string>
+    <string>Open File</string>
    </property>
   </action>
   <action name="actionSave_Project_As">
    <property name="text">
-    <string>Save Time File As</string>
+    <string>Save File As</string>
    </property>
   </action>
   <action name="actionOptions">
@@ -151,16 +156,6 @@
   <action name="actionExit">
    <property name="text">
     <string>Exit</string>
-   </property>
-  </action>
-  <action name="actionCommunity_List">
-   <property name="text">
-    <string>Community List</string>
-   </property>
-  </action>
-  <action name="actionRemove_Community">
-   <property name="text">
-    <string>Remove Community</string>
    </property>
   </action>
   <action name="actionAdd_Work_Period">

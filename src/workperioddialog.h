@@ -17,11 +17,18 @@ public:
   ~WorkPeriodDialog();
 
 public:
+  Community * community();
+  QDateTime endTime() const;
+  QString notes() const;
+  QDateTime startTime() const;
+  void setEnd(const QDateTime & dateTime);
+  void setNotes(const QString & notes);
+  void setStart(const QDateTime & dateTime);
+
+public:
   void addCommunity(Community * community);
   void setCommunity(Community * community);
   void setEnableCommunity(bool enable);
-  void setStart(const QDateTime & dateTime);
-  void setEnd(const QDateTime & dateTime);
 
 private slots:
   void updateData();

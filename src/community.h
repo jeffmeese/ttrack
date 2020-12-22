@@ -40,6 +40,8 @@ public:
   const WorkPeriod * getWorkPeriod(std::size_t index) const;
   void loadFromDataStream(QDataStream & dataStream);
   void removeAllBoardMembers();
+  bool removeWorkPeriod(WorkPeriod * workPeriod);
+  bool removeWorkPeriod(int index);
   void saveToDataStream(QDataStream & dataStream) const;
   void startWork();
   void stopWork();

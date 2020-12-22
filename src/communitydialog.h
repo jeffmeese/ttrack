@@ -18,8 +18,10 @@ public:
   ~CommunityDialog();
 
 public:
+  bool active() const;
   QString description() const;
   QString name() const;
+  void setActive(bool active);
   void setDescription(const QString & description);
   void setName(const QString & name);
 

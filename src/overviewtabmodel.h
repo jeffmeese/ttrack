@@ -12,6 +12,10 @@ class OverviewTabModel
   Q_OBJECT
 
 public:
+  static const int CommunityRole = Qt::UserRole;
+  static const int ProjectRole = Qt::UserRole+1;
+
+public:
   OverviewTabModel();
 
 public:

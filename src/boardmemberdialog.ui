@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>197</height>
+    <height>200</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -66,6 +66,12 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>cName</tabstop>
+  <tabstop>cTitle</tabstop>
+  <tabstop>cEmail</tabstop>
+  <tabstop>cPhone</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

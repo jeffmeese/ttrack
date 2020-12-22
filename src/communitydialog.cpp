@@ -30,6 +30,11 @@ CommunityDialog::~CommunityDialog()
   delete mUi;
 }
 
+bool CommunityDialog::active() const
+{
+  return mUi->cActive->isChecked();
+}
+
 void CommunityDialog::addBoardMember(const BoardMember & boardMember)
 {
   int rows = mUi->cBoardMembers->rowCount();
@@ -86,6 +91,11 @@ void CommunityDialog::handleRemoveMember()
 QString CommunityDialog::name() const
 {
   return mUi->cName->text().trimmed();
+}
+
+void CommunityDialog::setActive(bool value)
+{
+  mUi->cActive->setChecked(value);
 }
 
 void CommunityDialog::setDescription(const QString &description)

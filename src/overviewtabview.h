@@ -13,11 +13,17 @@ class OverviewTabView
 public:
   explicit OverviewTabView(QWidget * parentWidget = nullptr);
 
+protected:
+  void mouseDoubleClickEvent(QMouseEvent * event) override;
+
 private slots:
   void handleContextMenu(const QPoint & point);
   void handleIndexClick(const QModelIndex & index);
 
 private:
+  void handleAddCommunity();
+  void handleAddWorkPeriod(Community * community);
+  void handleRemoveCommunity(Community * community);
   void showPropertiesDialog(Community * community);
 
 signals:

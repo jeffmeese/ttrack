@@ -5,6 +5,7 @@
 #include "communitydialog.h"
 #include "communitymodel.h"
 #include "overviewtabmodel.h"
+#include "communityview.h"
 #include "project.h"
 #include "workperiod.h"
 #include "workperioddialog.h"
@@ -14,11 +15,11 @@
 #include <thread>
 
 #include <QDebug>
+#include <QFileDialog>
 
 MainWindow::MainWindow(QWidget *parent)
   : QMainWindow(parent)
   , mUi(new Ui::MainWindow)
-  , mFileName("jeff.tta")
 {
   initUi();
   initActions();
@@ -32,6 +33,7 @@ MainWindow::~MainWindow()
 void MainWindow::handleAddCommunity()
 {
   CommunityDialog dialog(this);
+  dialog.setActive(true);
   int response = dialog.exec();
   if (response == QDialog::Rejected) {
     return;
@@ -41,18 +43,19 @@ void MainWindow::handleAddCommunity()
   std::unique_ptr<Community> community(new Community);
   community->setName(name);
   community->setDescription(dialog.description());
-  for (std::size_t i = 0; i < dialog.totalBoardMembers(); i++) {
+  for (int i = 0; i < dialog.totalBoardMembers(); i++) {
     BoardMember boardMember = dialog.getBoardMember(i);
     std::unique_ptr<BoardMember> newBoardMember(new BoardMember(boardMember));
     community->addBoardMember(std::move(newBoardMember));
   }
-
   mProject->addCommunity(std::move(community));
 }
 
 void MainWindow::handleAddWorkPeriod()
 {
   WorkPeriodDialog dialog(this);
+  dialog.setStart(QDateTime(QDate::currentDate(), QTime::currentTime()));
+  dialog.setEnd(QDateTime(QDate::currentDate(), QTime::currentTime()));
   for (std::size_t i = 0; i < mProject->totalCommunities(); i++) {
     Community * community = mProject->getCommunity(i);
     dialog.addCommunity(community);
@@ -62,24 +65,55 @@ void MainWindow::handleAddWorkPeriod()
   if (response == QDialog::Rejected) {
     return;
   }
+
+  Community * community = dialog.community();
+  QDateTime start = dialog.startTime();
+  QDateTime end = dialog.endTime();
+
+  std::unique_ptr<WorkPeriod> workPeriod(new WorkPeriod(start, end));
+  workPeriod->setNotes(dialog.notes());
+  community->addWorkPeriod(std::move(workPeriod));
+
+  mProject->saveToFile(mFileName);
 }
 
 void MainWindow::closeEvent(QCloseEvent *)
 {
   stopAllWork();
-  mProject->saveToFile(mFileName);
+  if (!mFileName.isEmpty())
+    mProject->saveToFile(mFileName);
 }
+
+void MainWindow::handleAboutToShowCommunities()
+{
+  mUi->actionAdd_Community->setEnabled(!mFileName.isEmpty());
+  mUi->actionAdd_Work_Period->setEnabled(!mFileName.isEmpty());
+}
+
+void MainWindow::handleAboutToShowProgram()
+{
+  mUi->actionSave_Project_As->setEnabled(!mFileName.isEmpty());
+}
+
 
 void MainWindow::handleExit()
 {
   stopAllWork();
-  mProject->saveToFile(mFileName);
+  if (!mFileName.isEmpty())
+    mProject->saveToFile(mFileName);
+
   QApplication::quit();
 }
 
 void MainWindow::handleOpenProject()
 {
-  openProject(mFileName);
+  QString caption("Choose a file");
+  QString filter("Community Time Tracker Files (*.tta)");
+  QString fileName = QFileDialog::getOpenFileName(this, caption, QDir::currentPath(), filter);
+  if (fileName.isEmpty())
+    return;
+
+  openProject(fileName);
 }
 
 void MainWindow::handleOptions()
@@ -94,6 +128,14 @@ void MainWindow::handleProjectModified(bool)
 
 void MainWindow::handleNewProject()
 {
+  QString caption("Enter a file name");
+  QString filter("Community Time Tracker Files (*.tta)");
+  QString fileName = QFileDialog::getSaveFileName(this, caption, QDir::currentPath(), filter);
+  qDebug() << fileName;
+  if (fileName.isEmpty())
+    return;
+
+  mFileName = fileName;
   newProject();
 }
 
@@ -115,7 +157,7 @@ void MainWindow::handleShowCommunityTab(Community * community)
     }
   }
 
-  QTableView * tableView = new QTableView(mUi->cTabWidget);
+  CommunityView * tableView = new CommunityView(mUi->cTabWidget);
   tableView->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 
   CommunityModel * model = new CommunityModel;
@@ -126,8 +168,30 @@ void MainWindow::handleShowCommunityTab(Community * community)
   mTabTable[community] = tableView;
 }
 
+void MainWindow::handleTabClosed(int index)
+{
+  qDebug() << QObject::tr(__FUNCTION__);
+
+  QWidget * widget = mUi->cTabWidget->widget(index);
+  if (widget == mUi->cCommunitiesView) {
+    // Can't close the overview tab
+    return;
+  }
+
+  for (TabWidgetTable::iterator itr = mTabTable.begin(); itr != mTabTable.end(); itr++) {
+    if (itr->second == widget) {
+      mUi->cTabWidget->removeTab(index);
+      mTabTable.erase(itr);
+      delete widget;
+    }
+  }
+}
+
 void MainWindow::initActions()
 {
+  connect(mUi->menuProgram, SIGNAL(aboutToShow()), SLOT(handleAboutToShowProgram()));
+  connect(mUi->menuProject, SIGNAL(aboutToShow()), SLOT(handleAboutToShowCommunities()));
+
   connect(mUi->actionNew_Project, SIGNAL(triggered()), SLOT(handleNewProject()));
   connect(mUi->actionOpen_Project, SIGNAL(triggered()), SLOT(handleOpenProject()));
   connect(mUi->actionSave_Project_As, SIGNAL(triggered()), SLOT(handleSaveProjectAs()));
@@ -140,7 +204,8 @@ void MainWindow::initActions()
 void MainWindow::initUi()
 {
   mUi->setupUi(this);
-  mUi->cTabWidget->removeTab(1);
+  mUi->cFilter->addItem("All Communities");
+  mUi->cFilter->addItem("Active Communities");
 }
 
 void MainWindow::newProject()
@@ -153,6 +218,7 @@ void MainWindow::newProject()
 
   connect(mProject.get(), SIGNAL(modified(bool)), SLOT(handleProjectModified(bool)));
   connect(mUi->cCommunitiesView, SIGNAL(showCommunity(Community*)), SLOT(handleShowCommunityTab(Community*)));
+  connect(mUi->cTabWidget, SIGNAL(tabCloseRequested(int)), SLOT(handleTabClosed(int)));
 
   updateWindowTitle();
 }
@@ -162,6 +228,7 @@ void MainWindow::openProject(const QString & fileName)
   newProject();
   mProject->loadFromFile(fileName);
   mFileName = fileName;
+  mOverviewTabModel->setProject(mProject.get());
   updateWindowTitle();
 }
 
@@ -183,8 +250,10 @@ void MainWindow::stopAllWork()
 
 void MainWindow::updateWindowTitle()
 {
+  QFileInfo fileInfo(mFileName);
+
   std::ostringstream oss;
   oss << "Community Time Tracker - ";
-  oss << mFileName.toStdString();
+  oss << fileInfo.fileName().toStdString();
   setWindowTitle(QString::fromStdString(oss.str()));
 }

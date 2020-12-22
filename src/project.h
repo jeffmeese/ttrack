@@ -27,6 +27,8 @@ public:
   Community * getCommunity(std::size_t index);
   void loadFromFile(const QString & fileName);
   void loadFromStream(QDataStream & dataStream);
+  bool removeCommunity(Community * community);
+  bool removeCommunity(std::size_t index);
   void saveToFile(const QString & fileName) const;
   void saveToStream(QDataStream & dataStream) const;
   std::size_t totalCommunities() const;
@@ -41,10 +43,11 @@ signals:
 
 private:
   using CommunityPtr = std::unique_ptr<Community>;
+  using CommunityVector = std::vector<CommunityPtr>;
 
 private:
   bool mModified;
-  std::vector<CommunityPtr> mCommunities;
+  CommunityVector mCommunities;
 };
 
 inline bool Project::modified() const

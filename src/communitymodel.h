@@ -9,6 +9,10 @@ class CommunityModel
     : public QAbstractTableModel
 {
 public:
+  static const int CommunityRole = Qt::UserRole;
+  static const int WorkPeriodRole = Qt::UserRole + 1;
+
+public:
   CommunityModel();
   ~CommunityModel();
 
@@ -23,6 +27,9 @@ public:
   QVariant headerData(int section, Qt::Orientation orientataion, int role = Qt::DisplayRole) const override;
   QModelIndex parent(const QModelIndex & index) const override;
   int rowCount(const QModelIndex & parent = QModelIndex()) const override;
+
+private:
+  QString formatTime(int seconds) const;
 
 private:
   Community * mCommunity;

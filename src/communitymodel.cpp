@@ -3,6 +3,7 @@
 #include "workperiod.h"
 
 Q_DECLARE_METATYPE(Community*);
+Q_DECLARE_METATYPE(WorkPeriod*);
 
 CommunityModel::CommunityModel()
   : mCommunity(nullptr)
@@ -25,6 +26,9 @@ QVariant CommunityModel::data(const QModelIndex & index, int role) const
     return QVariant();
 
   if (role == Qt::DisplayRole) {
+    if (!index.isValid())
+      return QVariant();
+
     int row = index.row();
     int col = index.column();
     if (row < static_cast<int>(mCommunity->totalWorkPeriods())) {
@@ -36,46 +40,49 @@ QVariant CommunityModel::data(const QModelIndex & index, int role) const
         return workPeriod->end();
       }
       else if (col == 2) {
-        return workPeriod->duration();
+        return formatTime(workPeriod->duration());
       }
     }
+  }
+
+  if (role == CommunityRole) {
+    QVariant v;
+    v.setValue(mCommunity);
+    return v;
+  }
+
+  if (role == WorkPeriodRole) {
+    if (!index.isValid()) {
+      return QVariant();
+    }
+
+    int row = index.row();
+    WorkPeriod * workPeriod = mCommunity->getWorkPeriod(row);
+
+    QVariant v;
+    v.setValue(workPeriod);
+    return v;
   }
 
   return QVariant();
 }
 
-//QString OverviewTabModel::formatTime(int seconds) const
-//{
-//  int hours = 0, minutes = 0;
-//  while (seconds >= 3600) {
-//    hours++;
-//    seconds -= 3600;
-//  }
-//  while (seconds >= 60) {
-//    minutes++;
-//    seconds -= 60;
-//  }
-//  QString s1 = QString("%1:%2:%3").arg(hours, 2, 10, QChar('0'))
-//                                  .arg(minutes, 2, 10, QChar('0'))
-//                                  .arg(seconds, 2, 10, QChar('0'));
-//  return s1;
-//}
-
-//void OverviewTabModel::handleAddCommunity(Community * community)
-//{
-//  connect(community, SIGNAL(changed()), SLOT(handleCommunityChanged()));
-//  emit layoutChanged();
-//}
-
-//void CommunityModel::handleCommunityChanged()
-//{
-//  emit layoutChanged();
-//}
-
-//void CommunityModel::handleProjectModified()
-//{
-//  emit layoutChanged();
-//}
+QString CommunityModel::formatTime(int seconds) const
+{
+  int hours = 0, minutes = 0;
+  while (seconds >= 3600) {
+    hours++;
+    seconds -= 3600;
+  }
+  while (seconds >= 60) {
+    minutes++;
+    seconds -= 60;
+  }
+  QString s1 = QString("%1:%2:%3").arg(hours, 2, 10, QChar('0'))
+                                  .arg(minutes, 2, 10, QChar('0'))
+                                  .arg(seconds, 2, 10, QChar('0'));
+  return s1;
+}
 
 QVariant CommunityModel::headerData(int section, Qt::Orientation orientataion, int role) const
 {
@@ -105,32 +112,10 @@ int CommunityModel::rowCount(const QModelIndex &) const
   return (mCommunity != nullptr) ? static_cast<int>(mCommunity->totalWorkPeriods()) : 0;
 }
 
-//bool CommunityModel::setData(const QModelIndex & index, const QVariant & value, int role)
-//{
-//  if (role != Qt::EditRole)
-//    return QAbstractTableModel::setData(index, value, role);
-
-//  if (index.column() != 0) {
-//    return QAbstractTableModel::setData(index, value, role);
-//  }
-
-//  bool v = value.toBool();
-//  Community * community = mProject->getCommunity(index.row());
-//  if (v)
-//    community->startWork();
-//  else
-//    community->stopWork();
-
-//  emit layoutChanged();
-  //return true;
-//}
-
 void CommunityModel::setCommunity(Community *community)
 {
   mCommunity = community;
   if (mCommunity != nullptr) {
     connect(community, SIGNAL(changed()), SIGNAL(layoutChanged()));
-    //connect(community, SIGNAL(communityAdded(Community *)), SLOT(handleAddCommunity(Community*)));
-    //connect(community, SIGNAL(modified(bool)), SLOT(handleProjectModified()));
   }
 }

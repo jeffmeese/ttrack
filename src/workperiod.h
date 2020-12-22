@@ -19,12 +19,14 @@ public:
   QDateTime end() const;
   QDate endDate() const;
   QTime endTime() const;
+  QString notes() const;
   QDateTime start() const;
   QDate startDate() const;
   QTime startTime() const;
   void setEnd(const QDateTime & dateTime);
   void setEndDate(const QDate & date);
   void setEndTime(const QTime & time);
+  void setNotes(const QString & notes);
   void setStart(const QDateTime & dateTime);
   void setStartDate(const QDate & date);
   void setStartTime(const QTime & time);
@@ -35,10 +37,11 @@ public:
   void saveToDataStream(QDataStream & dataStream) const;
 
 private:
-  QDate mStartDate;
   QDate mEndDate;
-  QTime mStartTime;
   QTime mEndTime;
+  QDate mStartDate;
+  QTime mStartTime;
+  QString mNotes;
 };
 
 
